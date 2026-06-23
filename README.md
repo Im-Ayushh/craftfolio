@@ -57,6 +57,3 @@ ai-resume-v2/
 | POST | `/generate/resume` | Generate resume HTML |
 | POST | `/generate/cover-letter` | Generate cover letter |
 | POST | `/improve/resume` | Get 5 AI improvement tips |
-
-## Built for
-IBM NTCC Internship — Generative AI Project (Project 2)
