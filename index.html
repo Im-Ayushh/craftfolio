@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRAFTFOLIO — AI Resume & Cover Letter Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #000000;
+      --black-soft: #0a0a0a;
+      --black-card: #0f0f0f;
+      --black-elevated: #141414;
+      --glass-bg: rgba(255,255,255,0.04);
+      --glass-border: rgba(255,255,255,0.08);
+      --glass-hover: rgba(255,255,255,0.07);
+      --white: #ffffff;
+      --white-60: rgba(255,255,255,0.6);
+      --white-30: rgba(255,255,255,0.3);
+      --white-10: rgba(255,255,255,0.1);
+      --accent: #e8e8e8;
+      --accent-dim: rgba(232,232,232,0.15);
+      --success: #4ade80;
+      --warning: #facc15;
+      --error: #f87171;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--black);
+      color: var(--white);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Subtle ambient background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -30%;
+      left: -10%;
+      width: 60%;
+      height: 60%;
+      background: radial-gradient(ellipse, rgba(255,255,255,0.025) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -20%;
+      right: -10%;
+      width: 50%;
+      height: 50%;
+      background: radial-gradient(ellipse, rgba(255,255,255,0.015) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Header ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(0,0,0,0.7);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 0 2rem;
+    }
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--white);
+    }
+    .logo span { color: var(--white-60); font-weight: 600; }
+    .badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--white-60);
+      border: 1px solid var(--glass-border);
+      padding: 3px 10px;
+      border-radius: 100px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 72px 2rem 48px;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--white-30);
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      color: var(--white);
+      margin-bottom: 18px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--white-60);
+    }
+    .hero p {
+      font-size: 1rem;
+      color: var(--white-60);
+      max-width: 480px;
+      margin: 0 auto 48px;
+      line-height: 1.7;
+      font-weight: 400;
+    }
+
+    /* ── Stats row ── */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 2px;
+      margin-bottom: 60px;
+    }
+    .stat {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      padding: 14px 28px;
+      text-align: center;
+    }
+    .stat:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+    .stat:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--white);
+    }
+    .stat-label {
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: var(--white-30);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* ── Main layout ── */
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 2rem 80px;
+    }
+
+    /* ── Glass card ── */
+    .glass-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: border-color 0.2s;
+    }
+    .glass-card:hover { border-color: rgba(255,255,255,0.13); }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--white-30);
+      margin-bottom: 10px;
+    }
+
+    /* ── Input area ── */
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 700px) { .input-grid { grid-template-columns: 1fr; } }
+
+    .input-box {
+      padding: 20px;
+    }
+    .input-box textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      resize: vertical;
+      min-height: 220px;
+      caret-color: var(--white);
+    }
+    .input-box textarea::placeholder { color: rgba(255,255,255,0.2); }
+
+    .char-count {
+      font-size: 0.65rem;
+      color: var(--white-30);
+      margin-top: 8px;
+      text-align: right;
+    }
+
+    /* ── Action buttons ── */
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 700px) { .actions { grid-template-columns: 1fr 1fr; } }
+
+    .action-btn {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--white-60);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 14px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+    }
+    .action-btn:hover {
+      background: var(--glass-hover);
+      border-color: rgba(255,255,255,0.2);
+      color: var(--white);
+    }
+    .action-btn.active {
+      background: var(--white);
+      border-color: var(--white);
+      color: var(--black);
+    }
+    .action-btn .btn-icon { font-size: 1.2rem; }
+    .action-btn .btn-label { font-weight: 600; font-size: 0.72rem; }
+    .action-btn .btn-sub { font-size: 0.6rem; opacity: 0.6; }
+
+    /* ── Generate button ── */
+    .generate-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .generate-btn {
+      flex: 1;
+      background: var(--white);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: var(--black);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      padding: 16px 32px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .generate-btn:hover { background: var(--accent); transform: translateY(-1px); }
+    .generate-btn:active { transform: translateY(0); }
+    .generate-btn:disabled {
+      background: var(--white-10);
+      color: var(--white-30);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ── Loader ── */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(0,0,0,0.2);
+      border-top-color: var(--black);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Output area ── */
+    .output-section { display: none; margin-top: 24px; }
+    .output-section.visible { display: block; }
+
+    .output-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .output-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .output-actions { display: flex; gap: 8px; }
+
+    .icon-btn {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--white-60);
+      font-size: 0.75rem;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .icon-btn:hover { background: var(--glass-hover); color: var(--white); border-color: rgba(255,255,255,0.15); }
+
+    .output-tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--white-30);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 8px 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .tab-btn.active { background: var(--white-10); color: var(--white); border-color: rgba(255,255,255,0.2); }
+
+    .output-box {
+      padding: 28px;
+      position: relative;
+    }
+    .output-content {
+      font-size: 0.85rem;
+      line-height: 1.85;
+      color: rgba(255,255,255,0.85);
+      white-space: pre-wrap;
+      font-family: 'Inter', sans-serif;
+      min-height: 200px;
+    }
+
+    /* ── ATS Score ── */
+    .ats-panel { padding: 28px; }
+    .ats-score-row {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+    .ats-circle {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--glass-border);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .ats-circle-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .ats-circle-label { font-size: 0.55rem; color: var(--white-30); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+    .ats-grade {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--white-30);
+    }
+    .ats-desc { color: var(--white-60); font-size: 0.85rem; line-height: 1.6; }
+
+    .ats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 600px) { .ats-grid { grid-template-columns: 1fr; } }
+
+    .ats-block {
+      background: var(--black-elevated);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+    }
+    .ats-block-title {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--white-30);
+      margin-bottom: 12px;
+    }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      font-size: 0.68rem;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 100px;
+      background: var(--white-10);
+      color: var(--white-60);
+    }
+    .tag.green { background: rgba(74,222,128,0.12); color: var(--success); }
+    .tag.red { background: rgba(248,113,113,0.12); color: var(--error); }
+
+    .ats-list { list-style: none; }
+    .ats-list li {
+      font-size: 0.8rem;
+      color: var(--white-60);
+      padding: 5px 0;
+      border-bottom: 1px solid var(--glass-border);
+      line-height: 1.5;
+    }
+    .ats-list li:last-child { border-bottom: none; }
+    .ats-list li::before { content: '→ '; color: var(--white-30); }
+
+    /* ── Progress bar ── */
+    .progress-bar-wrap {
+      background: var(--white-10);
+      border-radius: 100px;
+      height: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      background: var(--white);
+      transition: width 0.8s ease;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background: var(--white);
+      color: var(--black);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      z-index: 999;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ── Footer ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 32px 2rem;
+      border-top: 1px solid var(--glass-border);
+      color: var(--white-30);
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="logo">Resume<span>AI</span></div>
+      <div class="badge">Powered by GPT-4o</div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <p class="hero-eyebrow">AI-Powered Career Tools</p>
+    <h1>Craft your edge.<br/><em>Land the interview.</em></h1>
+    <p>Paste your resume and a job description. Get an ATS-optimized resume, a tailored cover letter, and a keyword score — in seconds.</p>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">GPT-4o</div>
+        <div class="stat-label">Model</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">ATS</div>
+        <div class="stat-label">Optimized</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">&lt;10s</div>
+        <div class="stat-label">Generation</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Tailored</div>
+      </div>
+    </div>
+  </section>
+
+  <main class="app">
+    <!-- Input -->
+    <div class="input-grid">
+      <div class="glass-card input-box">
+        <div class="section-label">Your Resume</div>
+        <textarea id="resumeText" placeholder="Paste your current resume here...&#10;&#10;Include your experience, skills, education, and any achievements. The more detail, the better the output."></textarea>
+        <div class="char-count"><span id="resumeCount">0</span> characters</div>
+      </div>
+      <div class="glass-card input-box">
+        <div class="section-label">Job Description</div>
+        <textarea id="jobDesc" placeholder="Paste the job description here...&#10;&#10;Include the full JD with requirements, responsibilities, and any skills mentioned."></textarea>
+        <div class="char-count"><span id="jobCount">0</span> characters</div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="actions">
+      <button class="action-btn active" data-type="resume" onclick="selectType(this)">
+        <span class="btn-icon">📄</span>
+        <span class="btn-label">Resume</span>
+        <span class="btn-sub">ATS-optimized</span>
+      </button>
+      <button class="action-btn" data-type="cover_letter" onclick="selectType(this)">
+        <span class="btn-icon">✉️</span>
+        <span class="btn-label">Cover Letter</span>
+        <span class="btn-sub">Personalized</span>
+      </button>
+      <button class="action-btn" data-type="both" onclick="selectType(this)">
+        <span class="btn-icon">⚡</span>
+        <span class="btn-label">Both</span>
+        <span class="btn-sub">Complete package</span>
+      </button>
+      <button class="action-btn" data-type="ats_score" onclick="selectType(this)">
+        <span class="btn-icon">🎯</span>
+        <span class="btn-label">ATS Score</span>
+        <span class="btn-sub">Keyword analysis</span>
+      </button>
+    </div>
+
+    <!-- Generate -->
+    <div class="generate-row">
+      <button class="generate-btn" id="generateBtn" onclick="generate()">
+        <div class="spinner" id="spinner"></div>
+        <span id="btnText">Generate</span>
+      </button>
+    </div>
+
+    <!-- Output -->
+    <div class="output-section" id="outputSection">
+
+      <!-- Text outputs (resume / cover letter / both) -->
+      <div id="textOutput">
+        <div class="output-header">
+          <div class="output-title" id="outputTitle">Generated Resume</div>
+          <div class="output-actions">
+            <button class="icon-btn" onclick="copyOutput()">📋 Copy</button>
+            <button class="icon-btn" onclick="downloadOutput()">⬇ Download</button>
+          </div>
+        </div>
+
+        <!-- Tabs for "both" mode -->
+        <div class="output-tabs" id="outputTabs" style="display:none;">
+          <button class="tab-btn active" onclick="switchTab('resume', this)">Resume</button>
+          <button class="tab-btn" onclick="switchTab('cover_letter', this)">Cover Letter</button>
+        </div>
+
+        <div class="glass-card output-box">
+          <div class="output-content" id="outputContent"></div>
+        </div>
+      </div>
+
+      <!-- ATS Score output -->
+      <div id="atsOutput" style="display:none;">
+        <div class="output-header">
+          <div class="output-title">ATS Score Analysis</div>
+        </div>
+        <div class="glass-card ats-panel">
+          <div class="ats-score-row">
+            <div class="ats-circle" id="atsCircle">
+              <div class="ats-circle-num" id="atsScoreNum">—</div>
+              <div class="ats-circle-label">Score</div>
+            </div>
+            <div class="ats-grade" id="atsGrade">—</div>
+            <div class="ats-desc" id="atsDesc">Analyzing your resume against the job description...</div>
+          </div>
+
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="atsProgressBar" style="width: 0%"></div>
+          </div>
+          <div style="margin-top: 24px;"></div>
+
+          <div class="ats-grid">
+            <div class="ats-block">
+              <div class="ats-block-title">Matched Keywords</div>
+              <div class="tag-list" id="matchedKeywords"></div>
+            </div>
+            <div class="ats-block">
+              <div class="ats-block-title">Missing Keywords</div>
+              <div class="tag-list" id="missingKeywords"></div>
+            </div>
+            <div class="ats-block">
+              <div class="ats-block-title">Strengths</div>
+              <ul class="ats-list" id="strengthsList"></ul>
+            </div>
+            <div class="ats-block">
+              <div class="ats-block-title">Improvements</div>
+              <ul class="ats-list" id="improvementsList"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    CRAFTFOLIO · AI Resume & Cover Letter Generator · Built with FastAPI + GPT-4o
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let selectedType = 'resume';
+    let bothData = {};
+
+    // Char counters
+    document.getElementById('resumeText').addEventListener('input', function() {
+      document.getElementById('resumeCount').textContent = this.value.length;
+    });
+    document.getElementById('jobDesc').addEventListener('input', function() {
+      document.getElementById('jobCount').textContent = this.value.length;
+    });
+
+    function selectType(btn) {
+      document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedType = btn.dataset.type;
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    async function generate() {
+      const resumeText = document.getElementById('resumeText').value.trim();
+      const jobDesc = document.getElementById('jobDesc').value.trim();
+
+      if (!resumeText) { showToast('Please paste your resume'); return; }
+      if (!jobDesc) { showToast('Please paste the job description'); return; }
+
+      const btn = document.getElementById('generateBtn');
+      const spinner = document.getElementById('spinner');
+      const btnText = document.getElementById('btnText');
+
+      btn.disabled = true;
+      spinner.style.display = 'block';
+      btnText.textContent = 'Generating...';
+
+      document.getElementById('outputSection').classList.remove('visible');
+
+      try {
+        const res = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resume_text: resumeText,
+            job_description: jobDesc,
+            output_type: selectedType
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Server error');
+        }
+
+        const data = await res.json();
+        renderOutput(data);
+
+      } catch (err) {
+        showToast('Error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.textContent = 'Generate';
+      }
+    }
+
+    function renderOutput(data) {
+      const section = document.getElementById('outputSection');
+      const textOut = document.getElementById('textOutput');
+      const atsOut = document.getElementById('atsOutput');
+      const tabs = document.getElementById('outputTabs');
+
+      textOut.style.display = 'none';
+      atsOut.style.display = 'none';
+      tabs.style.display = 'none';
+
+      if (data.type === 'ats_score') {
+        atsOut.style.display = 'block';
+        renderATS(data.data);
+      } else if (data.type === 'both') {
+        textOut.style.display = 'block';
+        tabs.style.display = 'flex';
+        bothData = { resume: data.resume, cover_letter: data.cover_letter };
+        document.getElementById('outputTitle').textContent = 'Complete Package';
+        switchTab('resume', document.querySelector('.tab-btn'));
+      } else {
+        textOut.style.display = 'block';
+        const titles = { resume: 'Optimized Resume', cover_letter: 'Cover Letter' };
+        document.getElementById('outputTitle').textContent = titles[data.type] || 'Output';
+        document.getElementById('outputContent').textContent = data.content;
+      }
+
+      section.classList.add('visible');
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function renderATS(d) {
+      const score = d.score || 0;
+      document.getElementById('atsScoreNum').textContent = score;
+      document.getElementById('atsGrade').textContent = d.grade || '—';
+      setTimeout(() => {
+        document.getElementById('atsProgressBar').style.width = score + '%';
+      }, 100);
+
+      const descriptions = {
+        'A': 'Excellent match. Your resume aligns strongly with this role.',
+        'B': 'Good match. Minor tweaks can push this to the top pile.',
+        'C': 'Average match. Consider adding missing keywords from the JD.',
+        'D': 'Below average. Significant tailoring recommended.',
+        'F': 'Poor match. Consider whether this role aligns with your profile.'
+      };
+      document.getElementById('atsDesc').textContent = descriptions[d.grade] || '';
+
+      const mk = document.getElementById('matchedKeywords');
+      mk.innerHTML = '';
+      (d.matched_keywords || []).forEach(k => {
+        const tag = document.createElement('span');
+        tag.className = 'tag green';
+        tag.textContent = k;
+        mk.appendChild(tag);
+      });
+
+      const miss = document.getElementById('missingKeywords');
+      miss.innerHTML = '';
+      (d.missing_keywords || []).forEach(k => {
+        const tag = document.createElement('span');
+        tag.className = 'tag red';
+        tag.textContent = k;
+        miss.appendChild(tag);
+      });
+
+      const sl = document.getElementById('strengthsList');
+      sl.innerHTML = '';
+      (d.strengths || []).forEach(s => {
+        const li = document.createElement('li');
+        li.textContent = s;
+        sl.appendChild(li);
+      });
+
+      const il = document.getElementById('improvementsList');
+      il.innerHTML = '';
+      (d.improvements || []).forEach(i => {
+        const li = document.createElement('li');
+        li.textContent = i;
+        il.appendChild(li);
+      });
+    }
+
+    function switchTab(type, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      document.getElementById('outputContent').textContent = bothData[type] || '';
+    }
+
+    function copyOutput() {
+      const content = document.getElementById('outputContent').textContent;
+      navigator.clipboard.writeText(content).then(() => showToast('Copied to clipboard'));
+    }
+
+    function downloadOutput() {
+      const content = document.getElementById('outputContent').textContent;
+      const title = document.getElementById('outputTitle').textContent;
+      const blob = new Blob([content], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = title.replace(/\s+/g, '_') + '.txt';
+      a.click();
+    }
+  </script>
+</body>
+</html>
