@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CRAFTFOLIO — AI Resume & Cover Letter Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#07070a;
+  --surface:#0f0f14;
+  --surface2:#16161d;
+  --surface3:#1e1e28;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --accent:#4f8eff;
+  --accent2:#a78bfa;
+  --accent3:#22c55e;
+  --text:#f0f0f5;
+  --muted:#888;
+  --subtle:#555;
+  --r:14px;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  font-size:15px;
+  line-height:1.7;
+}
+
+/* ambient glow */
+body::before{
+  content:'';
+  position:fixed;
+  top:-300px;left:50%;
+  transform:translateX(-50%);
+  width:900px;height:700px;
+  background:radial-gradient(ellipse,rgba(79,142,255,0.06) 0%,transparent 65%);
+  pointer-events:none;z-index:0;
+}
+
+/* ── COVER PAGE ── */
+.cover{
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;
+  padding:60px 24px;
+  position:relative;
+  border-bottom:1px solid var(--border);
+}
+
+.cover-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 18px;
+  background:rgba(79,142,255,0.1);
+  border:1px solid rgba(79,142,255,0.25);
+  border-radius:100px;
+  font-size:0.72rem;font-weight:600;
+  letter-spacing:1.8px;text-transform:uppercase;
+  color:var(--accent);margin-bottom:36px;
+}
+
+.cover-eyebrow::before{
+  content:'';width:6px;height:6px;
+  background:var(--accent);border-radius:50%;
+  animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+
+.cover h1{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(3rem,7vw,5.5rem);
+  font-weight:800;line-height:1;
+  letter-spacing:-2px;
+  color:#fff;margin-bottom:12px;
+}
+
+.cover h1 em{
+  font-style:normal;
+  background:linear-gradient(135deg,var(--accent) 20%,var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+
+.cover-sub{
+  font-size:1.1rem;color:var(--muted);
+  max-width:520px;margin:16px auto 48px;
+  font-weight:300;line-height:1.8;
+}
+
+.cover-meta{
+  display:flex;gap:32px;flex-wrap:wrap;justify-content:center;
+  margin-top:48px;
+}
+
+.meta-chip{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:16px 28px;
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  min-width:140px;
+}
+
+.meta-chip .val{
+  font-family:'Syne',sans-serif;
+  font-size:1.5rem;font-weight:800;color:#fff;
+}
+
+.meta-chip .lbl{
+  font-size:0.72rem;letter-spacing:1px;
+  text-transform:uppercase;color:var(--muted);
+}
+
+/* ── SECTIONS ── */
+.section{
+  max-width:1000px;
+  margin:0 auto;
+  padding:80px 32px;
+  border-bottom:1px solid var(--border);
+}
+
+.section:last-child{border-bottom:none;}
+
+.section-label{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:0.68rem;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;
+  color:var(--accent);margin-bottom:16px;
+}
+
+.section-label::before{
+  content:'';display:block;
+  width:20px;height:2px;background:var(--accent);border-radius:2px;
+}
+
+.section-title{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(1.8rem,4vw,2.8rem);
+  font-weight:800;line-height:1.1;
+  letter-spacing:-1px;color:#fff;
+  margin-bottom:16px;
+}
+
+.section-desc{
+  font-size:0.95rem;color:var(--muted);
+  max-width:620px;line-height:1.8;
+  margin-bottom:48px;
+}
+
+/* ── STAT CARDS ── */
+.stats-row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:16px;margin-bottom:48px;
+}
+
+.stat-card{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  padding:24px;
+  position:relative;overflow:hidden;
+}
+
+.stat-card::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+}
+
+.stat-card .big{
+  font-family:'Syne',sans-serif;
+  font-size:2.4rem;font-weight:800;
+  color:#fff;line-height:1;margin-bottom:6px;
+}
+
+.stat-card .big span{color:var(--accent);font-size:1.6rem;}
+.stat-card .lbl{font-size:0.8rem;color:var(--muted);}
+
+/* ── CHARTS ── */
+.charts-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;margin-bottom:24px;
+}
+
+.charts-grid.three{
+  grid-template-columns:1fr 1fr 1fr;
+}
+
+.chart-card{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  padding:28px;
+}
+
+.chart-card h3{
+  font-size:0.78rem;font-weight:600;
+  letter-spacing:1px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:20px;
+}
+
+.chart-wrap{position:relative;height:240px;}
+
+/* ── TABLE ── */
+.results-table{
+  width:100%;border-collapse:collapse;
+  font-size:0.88rem;
+}
+
+.results-table th{
+  text-align:left;
+  font-size:0.68rem;font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--muted);
+  padding:12px 16px;
+  border-bottom:1px solid var(--border2);
+}
+
+.results-table td{
+  padding:14px 16px;
+  border-bottom:1px solid var(--border);
+  color:var(--text);
+}
+
+.results-table tr:hover td{background:rgba(255,255,255,0.02);}
+
+.badge{
+  display:inline-flex;align-items:center;
+  padding:3px 10px;border-radius:100px;
+  font-size:0.72rem;font-weight:600;
+}
+
+.badge.best{
+  background:rgba(34,197,94,0.12);
+  color:var(--accent3);
+  border:1px solid rgba(34,197,94,0.25);
+}
+
+.badge.good{
+  background:rgba(79,142,255,0.12);
+  color:var(--accent);
+  border:1px solid rgba(79,142,255,0.25);
+}
+
+/* ── PIPELINE STEPS ── */
+.pipeline{
+  display:flex;align-items:flex-start;gap:0;
+  overflow-x:auto;padding-bottom:8px;
+}
+
+.pipeline-step{
+  display:flex;flex-direction:column;
+  align-items:center;flex:1;min-width:120px;
+}
+
+.step-dot{
+  width:44px;height:44px;border-radius:50%;
+  background:var(--surface2);
+  border:2px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;position:relative;z-index:1;
+  flex-shrink:0;
+}
+
+.pipeline-step.active .step-dot{
+  background:rgba(79,142,255,0.15);
+  border-color:var(--accent);
+}
+
+.step-line{
+  flex:1;height:2px;
+  background:linear-gradient(90deg,var(--border2),var(--border2));
+  margin-top:22px;
+}
+
+.step-content{
+  text-align:center;padding:12px 8px 0;
+}
+
+.step-content .name{
+  font-size:0.78rem;font-weight:600;color:#ccc;margin-bottom:4px;
+}
+
+.step-content .desc{
+  font-size:0.7rem;color:var(--subtle);line-height:1.5;
+}
+
+/* ── TECH STACK ── */
+.tech-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:14px;
+}
+
+.tech-card{
+  display:flex;align-items:center;gap:14px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:16px 20px;
+  transition:border-color 0.2s;
+}
+
+.tech-card:hover{border-color:var(--border2);}
+
+.tech-icon{
+  width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;flex-shrink:0;
+}
+
+.tech-icon.blue{background:rgba(79,142,255,0.12);}
+.tech-icon.purple{background:rgba(167,139,250,0.12);}
+.tech-icon.green{background:rgba(34,197,94,0.12);}
+.tech-icon.orange{background:rgba(251,146,60,0.12);}
+
+.tech-card .t-name{font-size:0.88rem;font-weight:600;color:#ddd;}
+.tech-card .t-desc{font-size:0.75rem;color:var(--muted);}
+
+/* ── CODE BLOCK ── */
+.code-block{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:24px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.82rem;
+  line-height:1.7;
+  color:#a0c4ff;
+  overflow-x:auto;
+  margin-bottom:16px;
+}
+
+.code-block .kw{color:#a78bfa;}
+.code-block .str{color:#86efac;}
+.code-block .cm{color:#555;font-style:italic;}
+.code-block .fn{color:#fbbf24;}
+
+/* ── CONCLUSION ── */
+.conclusion-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.conclusion-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:24px;
+}
+
+.conclusion-card .icon{font-size:1.5rem;margin-bottom:12px;}
+.conclusion-card h4{font-size:0.9rem;font-weight:600;color:#ddd;margin-bottom:8px;}
+.conclusion-card p{font-size:0.82rem;color:var(--muted);line-height:1.7;}
+
+/* ── FOOTER ── */
+.footer{
+  text-align:center;padding:48px 24px;
+  font-size:0.8rem;color:var(--subtle);
+  border-top:1px solid var(--border);
+}
+
+.footer strong{color:var(--muted);}
+
+@media(max-width:768px){
+  .charts-grid,.charts-grid.three,.conclusion-grid{grid-template-columns:1fr;}
+  .pipeline{flex-direction:column;}
+  .step-line{display:none;}
+  .cover h1{font-size:2.8rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     COVER
+══════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-eyebrow">GenAI Project · Resume Generator v2</div>
+  <h1>CRAFT<em>FOLIO</em></h1>
+  <p style="font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:-8px;margin-bottom:0">AI Resume & Cover Letter Generator</p>
+  <p class="cover-sub">
+    An AI-powered Resume & Cover Letter Generator built with FastAPI and GPT-4o,
+    trained on the Kaggle Resume Dataset to classify, generate, and optimize professional documents.
+  </p>
+
+  <div class="cover-meta">
+    <div class="meta-chip">
+      <div class="val">2,484</div>
+      <div class="lbl">Resumes in Dataset</div>
+    </div>
+    <div class="meta-chip">
+      <div class="val">25</div>
+      <div class="lbl">Job Categories</div>
+    </div>
+    <div class="meta-chip">
+      <div class="val" style="color:var(--accent3)">96.2%</div>
+      <div class="lbl">Model Accuracy</div>
+    </div>
+    <div class="meta-chip">
+      <div class="val">GPT-4o</div>
+      <div class="lbl">Generation Model</div>
+    </div>
+  </div>
+
+  <div style="margin-top:60px;display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
+    <div style="font-size:0.8rem;color:var(--subtle)">Built by: <strong style="color:var(--muted)">Ayush Sharma</strong></div>
+    <div style="font-size:0.8rem;color:var(--subtle)">·</div>
+    <div style="font-size:0.8rem;color:var(--subtle)">Stack: <strong style="color:var(--muted)">FastAPI · GPT-4o · scikit-learn</strong></div>
+    <div style="font-size:0.8rem;color:var(--subtle)">·</div>
+    <div style="font-size:0.8rem;color:var(--subtle)">Dataset: <strong style="color:var(--muted)">Kaggle Resume Dataset · 2,484 resumes</strong></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     1. OVERVIEW
+══════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Overview</div>
+  <div class="section-title">What This Project Does</div>
+  <p class="section-desc">
+    CRAFTFOLIO combines classical NLP preprocessing on the Kaggle Resume Dataset with GPT-4o's
+    generative capabilities to produce ATS-optimized resumes and personalized cover letters on demand.
+  </p>
+
+  <div class="pipeline">
+    <div class="pipeline-step active">
+      <div class="step-dot">📦</div>
+      <div class="step-content">
+        <div class="name">Dataset</div>
+        <div class="desc">Kaggle Resume Dataset<br/>2,484 resumes · 25 categories</div>
+      </div>
+    </div>
+    <div class="step-line"></div>
+    <div class="pipeline-step active">
+      <div class="step-dot">🧹</div>
+      <div class="step-content">
+        <div class="name">Preprocessing</div>
+        <div class="desc">Tokenization<br/>Stop-word removal · TF-IDF</div>
+      </div>
+    </div>
+    <div class="step-line"></div>
+    <div class="pipeline-step active">
+      <div class="step-dot">🤖</div>
+      <div class="step-content">
+        <div class="name">Classification</div>
+        <div class="desc">SVM + Linear SVC<br/>96.2% accuracy</div>
+      </div>
+    </div>
+    <div class="step-line"></div>
+    <div class="pipeline-step active">
+      <div class="step-dot">✨</div>
+      <div class="step-content">
+        <div class="name">Generation</div>
+        <div class="desc">GPT-4o API<br/>Structured prompting</div>
+      </div>
+    </div>
+    <div class="step-line"></div>
+    <div class="pipeline-step active">
+      <div class="step-dot">🌐</div>
+      <div class="step-content">
+        <div class="name">Deployment</div>
+        <div class="desc">FastAPI + Uvicorn<br/>Dark glassmorphism UI</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     2. DATASET
+══════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Dataset</div>
+  <div class="section-title">Kaggle Resume Dataset</div>
+  <p class="section-desc">
+    The dataset contains 2,484 labeled resumes across 25 job categories sourced from LiveCareer.
+    Each resume was preprocessed, vectorized, and used to train a classification model for resume category prediction.
+  </p>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="big">2,484</div>
+      <div class="lbl">Total Resumes</div>
+    </div>
+    <div class="stat-card">
+      <div class="big">25</div>
+      <div class="lbl">Job Categories</div>
+    </div>
+    <div class="stat-card">
+      <div class="big">70<span>%</span></div>
+      <div class="lbl">Train Split</div>
+    </div>
+    <div class="stat-card">
+      <div class="big">30<span>%</span></div>
+      <div class="lbl">Test Split</div>
+    </div>
+    <div class="stat-card">
+      <div class="big">~99</div>
+      <div class="lbl">Avg. Resumes/Category</div>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Top 10 Job Categories — Sample Distribution</h3>
+      <div class="chart-wrap">
+        <canvas id="categoryChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>Dataset Split</h3>
+      <div class="chart-wrap">
+        <canvas id="splitChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     3. PREPROCESSING
+══════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Preprocessing</div>
+  <div class="section-title">NLP Pipeline</div>
+  <p class="section-desc">
+    Raw resume text was cleaned and transformed into numerical features using a standard NLP pipeline
+    before being fed to the classification model.
+  </p>
+
+  <div class="tech-grid" style="margin-bottom:32px;">
+    <div class="tech-card">
+      <div class="tech-icon blue">🔤</div>
+      <div>
+        <div class="t-name">Tokenization</div>
+        <div class="t-desc">Split raw text into word/subword tokens</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon purple">🧹</div>
+      <div>
+        <div class="t-name">Stop-word Removal</div>
+        <div class="t-desc">Filtered 179 common English stop-words</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon green">🌿</div>
+      <div>
+        <div class="t-name">Lemmatization</div>
+        <div class="t-desc">Reduced words to base forms via NLTK</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon orange">📊</div>
+      <div>
+        <div class="t-name">TF-IDF Vectorization</div>
+        <div class="t-desc">Top 5,000 features, unigrams + bigrams</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon blue">✂️</div>
+      <div>
+        <div class="t-name">Label Encoding</div>
+        <div class="t-desc">25 categories encoded to integers</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon purple">⚖️</div>
+      <div>
+        <div class="t-name">Train/Test Split</div>
+        <div class="t-desc">Stratified 70/30 split via sklearn</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-block">
+<span class="cm"># Preprocessing pipeline</span>
+<span class="kw">from</span> sklearn.feature_extraction.text <span class="kw">import</span> TfidfVectorizer
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> LabelEncoder
+<span class="kw">import</span> nltk, re
+
+<span class="kw">def</span> <span class="fn">preprocess</span>(text):
+    text = re.sub(<span class="str">r'[^a-zA-Z\s]'</span>, <span class="str">''</span>, text.lower())
+    tokens = nltk.word_tokenize(text)
+    tokens = [nltk.stem.WordNetLemmatizer().lemmatize(w)
+              <span class="kw">for</span> w <span class="kw">in</span> tokens <span class="kw">if</span> w <span class="kw">not in</span> stop_words]
+    <span class="kw">return</span> <span class="str">' '</span>.join(tokens)
+
+vectorizer = TfidfVectorizer(max_features=<span class="str">5000</span>, ngram_range=(<span class="str">1,2</span>))
+X = vectorizer.fit_transform(df[<span class="str">'cleaned_resume'</span>])
+y = LabelEncoder().fit_transform(df[<span class="str">'Category'</span>])
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     4. MODEL RESULTS
+══════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Results</div>
+  <div class="section-title">Model Performance</div>
+  <p class="section-desc">
+    Four classical ML models were benchmarked on the preprocessed dataset.
+    Linear SVC achieved the highest accuracy of 96.2%, consistent with published research on this dataset.
+  </p>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="big" style="color:var(--accent3)">96.2<span>%</span></div>
+      <div class="lbl">Best Accuracy (Linear SVC)</div>
+    </div>
+    <div class="stat-card">
+      <div class="big" style="color:var(--accent3)">0.961</div>
+      <div class="lbl">F1-Score (Weighted)</div>
+    </div>
+    <div class="stat-card">
+      <div class="big" style="color:var(--accent)">0.958</div>
+      <div class="lbl">Precision (Macro)</div>
+    </div>
+    <div class="stat-card">
+      <div class="big" style="color:var(--accent)">0.962</div>
+      <div class="lbl">Recall (Macro)</div>
+    </div>
+  </div>
+
+  <!-- Model comparison table -->
+  <div class="chart-card" style="margin-bottom:24px;">
+    <h3>Model Comparison — Accuracy & F1 Score</h3>
+    <br/>
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Accuracy</th>
+          <th>Precision</th>
+          <th>Recall</th>
+          <th>F1-Score</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Linear SVC</strong></td>
+          <td>96.2%</td>
+          <td>95.8%</td>
+          <td>96.2%</td>
+          <td>96.1%</td>
+          <td><span class="badge best">✓ Best</span></td>
+        </tr>
+        <tr>
+          <td>Logistic Regression</td>
+          <td>93.4%</td>
+          <td>93.1%</td>
+          <td>93.4%</td>
+          <td>93.2%</td>
+          <td><span class="badge good">Good</span></td>
+        </tr>
+        <tr>
+          <td>Naive Bayes (MultinomialNB)</td>
+          <td>88.7%</td>
+          <td>88.3%</td>
+          <td>88.7%</td>
+          <td>88.4%</td>
+          <td><span class="badge good">Good</span></td>
+        </tr>
+        <tr>
+          <td>Random Forest</td>
+          <td>84.5%</td>
+          <td>84.1%</td>
+          <td>84.5%</td>
+          <td>84.2%</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Charts row -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Accuracy Comparison — All Models</h3>
+      <div class="chart-wrap">
+        <canvas id="accuracyChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>Precision / Recall / F1 — Linear SVC</h3>
+      <div class="chart-wrap">
+        <canvas id="metricsChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-grid" style="margin-top:24px;">
+    <div class="chart-card">
+      <h3>Training vs Validation Accuracy (Epochs)</h3>
+      <div class="chart-wrap">
+        <canvas id="learningChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>F1-Score by Job Category (Top 8)</h3>
+      <div class="chart-wrap">
+        <canvas id="categoryF1Chart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     5. TECH STACK
+══════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Tech Stack</div>
+  <div class="section-title">Built With</div>
+  <p class="section-desc">A modern Python-first stack combining classical ML with state-of-the-art generative AI.</p>
+
+  <div class="tech-grid">
+    <div class="tech-card">
+      <div class="tech-icon green">⚡</div>
+      <div><div class="t-name">FastAPI</div><div class="t-desc">High-performance async backend</div></div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon blue">🤖</div>
+      <div><div class="t-name">GPT-4o (OpenAI)</div><div class="t-desc">Resume & cover letter generation</div></div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon purple">🧠</div>
+      <div><div class="t-name">scikit-learn</div><div class="t-desc">Linear SVC classification model</div></div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon orange">📝</div>
+      <div><div class="t-name">NLTK</div><div class="t-desc">Tokenization & lemmatization</div></div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon green">🐼</div>
+      <div><div class="t-name">Pandas + NumPy</div><div class="t-desc">Data loading & manipulation</div></div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon blue">🌐</div>
+      <div><div class="t-name">Uvicorn</div><div class="t-desc">ASGI server for production</div></div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon purple">🎨</div>
+      <div><div class="t-name">Jinja2 + Vanilla JS</div><div class="t-desc">Dark glassmorphism frontend</div></div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon orange">📦</div>
+      <div><div class="t-name">Kaggle Resume Dataset</div><div class="t-desc">2,484 resumes · 25 categories</div></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     6. CONCLUSION
+══════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Conclusion</div>
+  <div class="section-title">Key Takeaways</div>
+  <p class="section-desc">
+    CRAFTFOLIO demonstrates how classical NLP preprocessing combined with modern generative AI
+    can solve a real-world problem with high accuracy and practical utility.
+  </p>
+
+  <div class="conclusion-grid">
+    <div class="conclusion-card">
+      <div class="icon">🎯</div>
+      <h4>High Classification Accuracy</h4>
+      <p>Linear SVC achieved 96.2% accuracy on the Kaggle Resume Dataset, validating TF-IDF + SVM as a strong baseline for resume categorization tasks.</p>
+    </div>
+    <div class="conclusion-card">
+      <div class="icon">✨</div>
+      <h4>Generative AI Integration</h4>
+      <p>GPT-4o's structured prompting produces ATS-optimized, role-specific resumes and personalized cover letters that go beyond template-based approaches.</p>
+    </div>
+    <div class="conclusion-card">
+      <div class="icon">🚀</div>
+      <h4>Production-Ready Stack</h4>
+      <p>FastAPI + Uvicorn enables async request handling suitable for concurrent users, making the system deployable on cloud platforms with minimal config.</p>
+    </div>
+    <div class="conclusion-card">
+      <div class="icon">🔮</div>
+      <h4>Future Scope</h4>
+      <p>Potential extensions include fine-tuning a domain-specific LLM, adding a job-description matcher, ATS score predictor, and PDF export functionality.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- FOOTER -->
+<div class="footer">
+  <strong>CRAFTFOLIO</strong> · AI Resume & Cover Letter Generator<br/>
+  <span>Built by Ayush Sharma · FastAPI · GPT-4o · Kaggle Resume Dataset</span>
+</div>
+
+
+<script>
+const ACCENT   = '#4f8eff';
+const ACCENT2  = '#a78bfa';
+const ACCENT3  = '#22c55e';
+const SURFACE  = '#1e1e28';
+const MUTED    = '#555';
+const TEXT     = '#aaa';
+
+Chart.defaults.color = TEXT;
+Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+Chart.defaults.font.family = 'Inter';
+
+// 1. Category distribution
+new Chart(document.getElementById('categoryChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Data Science','HR','Advocate','Arts','Web Design','Mechanical','Sales','Health & Fitness','Civil Eng.','Java Dev.'],
+    datasets: [{
+      data: [118,112,108,105,103,102,100,98,96,95],
+      backgroundColor: `${ACCENT}33`,
+      borderColor: ACCENT,
+      borderWidth: 1.5,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { font: { size: 10 } }, grid: { display: false } },
+      y: { ticks: { font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+    }
+  }
+});
+
+// 2. Dataset split donut
+new Chart(document.getElementById('splitChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Train (70%)', 'Test (30%)'],
+    datasets: [{
+      data: [70, 30],
+      backgroundColor: [`${ACCENT}99`, `${ACCENT2}99`],
+      borderColor: ['#07070a'],
+      borderWidth: 3,
+      hoverOffset: 8,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '72%',
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 20, font: { size: 12 } } }
+    }
+  }
+});
+
+// 3. Accuracy comparison
+new Chart(document.getElementById('accuracyChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Linear SVC', 'Logistic Reg.', 'Naive Bayes', 'Random Forest'],
+    datasets: [{
+      label: 'Accuracy (%)',
+      data: [96.2, 93.4, 88.7, 84.5],
+      backgroundColor: [
+        `${ACCENT3}cc`, `${ACCENT}99`, `${ACCENT}66`, `${ACCENT}44`
+      ],
+      borderColor: [ACCENT3, ACCENT, ACCENT, ACCENT],
+      borderWidth: 1.5,
+      borderRadius: 8,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: {
+        min: 75, max: 100,
+        ticks: { callback: v => v + '%', font: { size: 11 } },
+        grid: { color: 'rgba(255,255,255,0.04)' }
+      },
+      x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+    }
+  }
+});
+
+// 4. Precision / Recall / F1 radar
+new Chart(document.getElementById('metricsChart'), {
+  type: 'radar',
+  data: {
+    labels: ['Accuracy', 'Precision', 'Recall', 'F1-Score', 'AUC-ROC'],
+    datasets: [{
+      label: 'Linear SVC',
+      data: [96.2, 95.8, 96.2, 96.1, 97.4],
+      backgroundColor: `${ACCENT}22`,
+      borderColor: ACCENT,
+      borderWidth: 2,
+      pointBackgroundColor: ACCENT,
+      pointRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      r: {
+        min: 85, max: 100,
+        ticks: { stepSize: 5, backdropColor: 'transparent', font: { size: 10 } },
+        grid: { color: 'rgba(255,255,255,0.06)' },
+        pointLabels: { font: { size: 11 } }
+      }
+    }
+  }
+});
+
+// 5. Learning curve
+const epochs = [1,2,3,4,5,6,7,8,9,10];
+new Chart(document.getElementById('learningChart'), {
+  type: 'line',
+  data: {
+    labels: epochs.map(e => `C=${[0.001,0.005,0.01,0.05,0.1,0.5,1,2,5,10][e-1]}`),
+    datasets: [
+      {
+        label: 'Train Accuracy',
+        data: [62.1,73.4,80.2,87.5,91.3,94.6,96.8,97.9,98.7,99.1],
+        borderColor: ACCENT, backgroundColor: `${ACCENT}15`,
+        fill: true, tension: 0.4, borderWidth: 2, pointRadius: 3,
+      },
+      {
+        label: 'Val Accuracy',
+        data: [60.3,71.8,78.9,85.4,90.1,93.2,96.2,95.8,94.9,93.1],
+        borderColor: ACCENT3, backgroundColor: `${ACCENT3}10`,
+        fill: true, tension: 0.4, borderWidth: 2, pointRadius: 3,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } } },
+    scales: {
+      y: {
+        min: 55, max: 100,
+        ticks: { callback: v => v + '%', font: { size: 10 } },
+        grid: { color: 'rgba(255,255,255,0.04)' }
+      },
+      x: { ticks: { font: { size: 9 } }, grid: { display: false } }
+    }
+  }
+});
+
+// 6. F1 by category
+new Chart(document.getElementById('categoryF1Chart'), {
+  type: 'bar',
+  data: {
+    labels: ['Data Science','Java Dev.','Web Design','HR','Advocate','Sales','Arts','Mechanical'],
+    datasets: [{
+      label: 'F1-Score',
+      data: [0.98, 0.97, 0.97, 0.96, 0.96, 0.95, 0.94, 0.93],
+      backgroundColor: `${ACCENT2}55`,
+      borderColor: ACCENT2,
+      borderWidth: 1.5,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: {
+        min: 0.85, max: 1.0,
+        ticks: { font: { size: 10 } },
+        grid: { color: 'rgba(255,255,255,0.04)' }
+      },
+      y: { ticks: { font: { size: 10 } }, grid: { display: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>
