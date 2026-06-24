@@ -295,11 +295,6 @@ POST /ats/score
 
 ---
 
-## 📄 License
-
-MIT License — feel free to use, modify and distribute.
-
----
 
 <div align="center">
 
